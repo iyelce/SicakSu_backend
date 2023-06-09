@@ -1,11 +1,16 @@
 package com.example.demo.models;
 
+
 import java.util.ArrayList;
+import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDateTime;
 
+@Document(collection = "events")
 public class Event {
 
 	@Id private String id;
@@ -15,19 +20,41 @@ public class Event {
 	private int joinCount;
 	private LocalDateTime requestDate;      
 	
-	private ArrayList<Profile> joinRequests = new ArrayList<Profile>();
-	private ArrayList<Profile> joinedPeople = new ArrayList<Profile>();
+	@DBRef
+	private ArrayList<Profile> joinedPeople;
 	
-	@DBRef private Profile user;
+	@DBRef 
+	private Profile createdBy;
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Event other = (Event) obj;
+		return Objects.equals(id, other.id);
+	}
+
+	
 
 	public Event() {}
 	
-	public Event(String content, String headline, int limit, LocalDateTime requestDate) {
+	public Event(String content, String headline, int limit, LocalDateTime requestDate,Profile createdBy) {
 		super();
 		this.content = content;
 		this.headline = headline;
 		this.limit = limit;
 		this.requestDate = requestDate;
+		this.joinedPeople = new ArrayList<Profile>();
+		this.createdBy = createdBy;
 	}
 
 	public String getId() {
@@ -36,6 +63,25 @@ public class Event {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public Event(String id, String content, String headline, int limit, int joinCount, LocalDateTime requestDate, ArrayList<Profile> joinedPeople, Profile createdBy) {
+		super();
+		this.id = id;
+		this.content = content;
+		this.headline = headline;
+		this.limit = limit;
+		this.joinCount = joinCount;
+		this.requestDate = requestDate;
+		this.joinedPeople = joinedPeople;
+		this.createdBy = createdBy;
+	}
+
+	@Override
+	public String toString() {
+		return "Event [content=" + content + ", headline=" + headline + ", limit=" + limit + ", joinCount=" + joinCount
+				+ ", requestDate=" + requestDate + ", joinedPeople=" + joinedPeople
+				+ ", user=" + createdBy + "]";
 	}
 
 	public String getContent() {
@@ -70,15 +116,10 @@ public class Event {
 		this.joinCount = joinCount;
 	}
 
-	public ArrayList<Profile> getJoinRequests() {
-		return joinRequests;
-	}
-
-	public void setJoinRequests(ArrayList<Profile> joinRequests) {
-		this.joinRequests = joinRequests;
-	}
-
 	public ArrayList<Profile> getJoinedPeople() {
+		if(this.joinedPeople == null) {
+			this.joinedPeople = new ArrayList<Profile>();
+		}
 		return joinedPeople;
 	}
 
@@ -86,12 +127,12 @@ public class Event {
 		this.joinedPeople = joinedPeople;
 	}
 
-	public Profile getUser() {
-		return user;
+	public Profile getCreatedBy() {
+		return createdBy;
 	}
 
-	public void setUser(Profile user) {
-		this.user = user;
+	public void setCreatedBy(Profile createdBy) {
+		this.createdBy = createdBy;
 	}
 	
 	public LocalDateTime getRequestDate() {
